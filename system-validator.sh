@@ -10,4 +10,7 @@ echo ""
 ./memory-check.sh
 echo ""
 
+./disk-check.sh
+echo ""
+
 echo "=== VALIDATION COMPLETE ==="
