@@ -2,17 +2,44 @@
 
 source ./output.sh
 
+# Option by default
+MODE="basic" # basic | detailed
+
+# Option identification
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		--basic|-b)
+			MODE='basic'
+			shift ;;
+		--detailed|-d)
+			MODE='detailed'
+			shift ;;
+		--help|-h)
+			print_neutral "Usage: ./system-validator.sh [OPTIONS]"			      		 print_neutral "Options:"
+			print_neutral "   -b, --basic	  Basic system check (default)"
+			print_neutral "   -d, --default   Detailed system analysis"
+			print_neutral "   -h, --help	  Show this help"
+			exit 0 ;;
+		*)
+			print_neutral "Uknown options: $1"
+			print_neutral "Use --help for usage information"
+			exit 1 ;;
+	esac
+done
+
+
 echo ""
 print_header "=== SYSTEM VALIDATOR ==="
-print_neutral "Cheking system components..."
+print_neutral "Timestamp: $(get_timestamp)"
+print_neutral "Mode: $MODE"
 print_separator
 echo ""
 
-print_section "Starting system validation..."
+print_neutral "Starting system validation..."
 echo ""
 
 print_neutral "Checking CPU..."
-./cpu-check.sh
+./cpu-check.sh --$MODE
 echo ""
 
 print_neutral "Checking Memory..."
