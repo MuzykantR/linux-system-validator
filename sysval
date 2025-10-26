@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Определяем корневую директорию проекта
+# Если скрипт запущен через симлинк, получаем реальный путь
+if [ -L "$0" ]; then
+    # Это симлинк - получаем реальный путь
+    REAL_PATH=$(readlink -f "$0")
+    PROJECT_ROOT=$(dirname "$REAL_PATH")
+else
+    # Это обычный файл
+    PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# Запускаем основной скрипт с правильными путями
+"$PROJECT_ROOT/core/system-validator.sh" "$@"

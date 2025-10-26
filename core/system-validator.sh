@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ./output.sh
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$PROJECT_ROOT/core/output.sh"
 
 # Option by default
 MODE="basic" # basic | detailed
@@ -39,15 +40,15 @@ print_neutral "Starting system validation..."
 echo ""
 
 print_neutral "Checking CPU..."
-./cpu-check.sh --$MODE
+"$PROJECT_ROOT/modules/cpu-check.sh" --$MODE
 echo ""
 
 print_neutral "Checking Memory..."
-./memory-check.sh
+"$PROJECT_ROOT/modules/memory-check.sh"
 echo ""
 
 print_neutral "Checking Disks..."
-./disk-check.sh
+"$PROJECT_ROOT/modules/disk-check.sh"
 echo ""
 
 print_separator

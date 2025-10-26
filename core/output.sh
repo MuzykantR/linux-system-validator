@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./config.sh
+source "$PROJECT_ROOT/core/config.sh"
 
 # Funcs for color output
 print_header() {
