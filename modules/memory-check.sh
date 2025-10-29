@@ -24,9 +24,9 @@ else
 	MEM_USAGE_PERCENT=0
 fi
 
-print_neutral "Total RAM: $TOTAL_MEM"
-print_status "$(check_memory_threshold $MEM_USAGE_PERCENT)" "Used RAM: $USED_MEM (${MEM_USAGE_PERCENT}%)"
-print_status "$(check_memory_threshold $MEM_USAGE_PERCENT)" "Free RAM: $FREE_MEM"
+print_property "Total RAM" "$TOTAL_MEM"
+print_status "$(check_memory_threshold $MEM_USAGE_PERCENT)" "Used RAM" "$USED_MEM (${MEM_USAGE_PERCENT}%)"
+print_status "$(check_memory_threshold $MEM_USAGE_PERCENT)" "Free RAM" "$FREE_MEM"
 
 # Check swap
 SWAP_INFO=$(free -b | awk 'NR==3')
@@ -36,5 +36,5 @@ SWAP_USED_BYTES=$(echo "$SWAP_INFO" | awk '{print $3}')
 if [ $SWAP_TOTAL_BYTES -gt 0 ]; then
 	SWAP_USAGE_PERCENT=$(echo "scale=1; $SWAP_USED_BYTES * 100 / $SWAP_TOTAL_BYTES" | bc)
 	SWAP_TOTAL=$(free -h | awk 'NR==3 {print$2}')
-	print_status "$(check_swap_threshold $SWAP_USAGE_PERCENT)" "Swap: $SWAP_TOTAL total (${SWAP_USAGE_PERCENT}% used)"
+	print_status "$(check_swap_threshold $SWAP_USAGE_PERCENT)" "Swap" "$SWAP_TOTAL total (${SWAP_USAGE_PERCENT}% used)"
 fi

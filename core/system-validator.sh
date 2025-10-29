@@ -39,16 +39,13 @@ echo ""
 print_neutral "Starting system validation..."
 echo ""
 
-print_neutral "Checking CPU..."
 "$PROJECT_ROOT/modules/cpu-check.sh" --$MODE
 echo ""
 
-print_neutral "Checking Memory..."
 "$PROJECT_ROOT/modules/memory-check.sh"
 echo ""
 
-print_neutral "Checking Disks..."
-"$PROJECT_ROOT/modules/disk-check.sh"
+"$PROJECT_ROOT/modules/disk-check.sh" --$MODE
 echo ""
 
 print_separator
