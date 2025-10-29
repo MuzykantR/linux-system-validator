@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-print_section "--- DISK INFORMATION ---"
+print_section "--- STORAGE INFORMATION ---"
 
 R_INFO=$(df -h / | grep -E '^/dev/' | awk '$6 == "/"')
 ROOT_DISK=$(echo $R_INFO | awk '{print $1}')

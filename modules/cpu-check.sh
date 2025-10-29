@@ -32,18 +32,22 @@ print_mini_section "Base info:"
 print_property "  Model" "$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2)"
 print_property "  Architecture"  "$(uname -m)"
 
-SOCKETS=$(lscpu | grep "Socket(s):" | awk '{print $2}')
-CORES_PER_SOCKET=$(lscpu | grep "Core(s) per socket:" | awk '{print $4}')
-THREADS_PER_CORE=$(lscpu | grep "Thread(s) per core:" | awk '{print $4}')
-CPU_MHZ=$(cat /proc/cpuinfo | grep "cpu MHz" | cut -d: -f2 | head -1 | sed 's/^[ \t]*//;s/[ \t]*$//')
-TOTAL_CORES=$((SOCKETS * $CORES_PER_SOCKET))
-TOTAL_THREADS=$((TOTAL_CORES * $THREADS_PER_CORE))
+if command -v lscpu &> /dev/null; then
+    SOCKETS=$(lscpu | grep "Socket(s):" | awk '{print $2}')
+    CORES_PER_SOCKET=$(lscpu | grep "Core(s) per socket:" | awk '{print $4}')
+    THREADS_PER_CORE=$(lscpu | grep "Thread(s) per core:" | awk '{print $4}')
+    CPU_MHZ=$(cat /proc/cpuinfo | grep "cpu MHz" | cut -d: -f2 | head -1 | sed 's/^[ \t]*//;s/[ \t]*$//')
+    TOTAL_CORES=$((SOCKETS * $CORES_PER_SOCKET))
+    TOTAL_THREADS=$((TOTAL_CORES * $THREADS_PER_CORE))
 
-print_property "  Sockets" "$SOCKETS"
-print_property "  Cores per socket" "$CORES_PER_SOCKET"
-print_property "  Threads per core" "$THREADS_PER_CORE"
-print_property "  Total" "$TOTAL_CORES cores, $TOTAL_THREADS threads"
-print_property "  Frequency" "${CPU_MHZ} MHz"
+    print_property "  Sockets" "$SOCKETS"
+    print_property "  Cores per socket" "$CORES_PER_SOCKET"
+    print_property "  Threads per core" "$THREADS_PER_CORE"
+    print_property "  Total" "$TOTAL_CORES cores, $TOTAL_THREADS threads"
+    print_property "  Frequency" "${CPU_MHZ} MHz"
+else
+    print_warning "lscpu not available - please install 'util-linux'"
+fi
 
 # =============== EXTRA INFO (detailed mode) ===============
 if [ "$MODE" = "detailed" ]; then
@@ -122,39 +126,47 @@ if command -v mpstat &> /dev/null; then
             print_property "  - User" "${USER_LOAD}%"
             print_property "  - System" "${SYSTEM_LOAD}%"
             print_property "  - Idle" "${IDLE_LOAD}%"
-	fi
+	else
+        print_warning "  Current load information not available"
+    fi
 fi
 
 # =============== EXTRA INFO (detailed mode) ===============
 if [ "$MODE" = "detailed" ]; then
 	echo ""
     print_mini_section "System statistic:"
-    	if command -v uptime &> /dev/null; then
-       		UPTIME=$(uptime -p | sed 's/up //')
-        	print_property "Uptime" "$UPTIME"
-    	fi
+    if command -v uptime &> /dev/null; then
+        UPTIME=$(uptime -p | sed 's/up //')
+        print_property "Uptime" "$UPTIME"
+    else
+        print_warning "uptime not available - please install 'procps'"
+    fi
 
-    	if command -v vmstat &> /dev/null; then
-        	VMSTAT_OUTPUT=$(vmstat 1 2 | tail -1)
-        	if [ -n "$VMSTAT_OUTPUT" ]; then
-            		RUNNING_PROCS=$(echo $VMSTAT_OUTPUT | awk '{print $1}')
-            		BLOCKED_PROCS=$(echo $VMSTAT_OUTPUT | awk '{print $2}')
-            		print_property "Running processes" "$RUNNING_PROCS"
-            		print_property "Blocked processes" "$BLOCKED_PROCS"
-        	fi
-    	fi
+    if command -v vmstat &> /dev/null; then
+        VMSTAT_OUTPUT=$(vmstat 1 2 | tail -1)
+        if [ -n "$VMSTAT_OUTPUT" ]; then
+                RUNNING_PROCS=$(echo $VMSTAT_OUTPUT | awk '{print $1}')
+                BLOCKED_PROCS=$(echo $VMSTAT_OUTPUT | awk '{print $2}')
+                print_property "Running processes" "$RUNNING_PROCS"
+                print_property "Blocked processes" "$BLOCKED_PROCS"
+        fi
+    else
+        print_warning "vmstat not available - please install 'sysstat'"
+    fi
 
-   	# Top proceses
-    	echo ""
-    	print_mini_section "Top proccesses by CPU"
-    
-    	if command -v ps &> /dev/null; then
-		    echo -e "${COLOR_BOLD_WHITE}  PID %CPU COMMAND${COLOR_RESET}"
-        	ps -eo pid,%cpu,comm --sort=-%cpu | head -6 | tail -5 | while read line; do
-            		PID=$(echo $line | awk '{print $1}')
-            		CPU_USAGE=$(echo $line | awk '{print $2}')
-            		CMD=$(echo $line | awk '{print $3}')
-			print_neutral "  $PID $CPU_USAGE% $CMD"
-        	done
-    	fi
+# Top proceses
+    echo ""
+    print_mini_section "Top proccesses by CPU"
+
+    if command -v ps &> /dev/null; then
+        echo -e "${COLOR_BOLD_WHITE}  PID %CPU COMMAND${COLOR_RESET}"
+        ps -eo pid,%cpu,comm --sort=-%cpu | head -6 | tail -5 | while read line; do
+            PID=$(echo $line | awk '{print $1}')
+            CPU_USAGE=$(echo $line | awk '{print $2}')
+            CMD=$(echo $line | awk '{print $3}')
+            print_neutral "  $PID $CPU_USAGE% $CMD"
+        done
+    else
+            print_warning "ps not available - please install 'procps'"
+    fi
 fi

@@ -16,7 +16,8 @@ while [[ $# -gt 0 ]]; do
 			MODE='detailed'
 			shift ;;
 		--help|-h)
-			print_neutral "Usage: ./system-validator.sh [OPTIONS]"			      		 print_neutral "Options:"
+			print_property "Usage" "sysval -[OPTIONS]"
+			print_property "Options"
 			print_neutral "   -b, --basic	  Basic system check (default)"
 			print_neutral "   -d, --default   Detailed system analysis"
 			print_neutral "   -h, --help	  Show this help"
@@ -31,12 +32,9 @@ done
 
 echo ""
 print_header "=== SYSTEM VALIDATOR ==="
-print_neutral "Timestamp: $(get_timestamp)"
-print_neutral "Mode: $MODE"
+print_property "Timestamp" "$(get_timestamp)"
+print_property "Mode" "$MODE"
 print_separator
-echo ""
-
-print_neutral "Starting system validation..."
 echo ""
 
 "$PROJECT_ROOT/modules/cpu-check.sh" --$MODE
@@ -45,7 +43,7 @@ echo ""
 "$PROJECT_ROOT/modules/memory-check.sh"
 echo ""
 
-"$PROJECT_ROOT/modules/disk-check.sh" --$MODE
+"$PROJECT_ROOT/modules/storage-check.sh" --$MODE
 echo ""
 
 print_separator

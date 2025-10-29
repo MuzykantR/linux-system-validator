@@ -47,24 +47,6 @@ check_swap_threshold() {
     fi
 }
 
-check_io_performance() {
-    local speed=$1
-    if (( $(echo "$speed < $IO_SPEED_SLOW" | bc -l) )); then
-        echo "/!\\"
-    elif (( $(echo "$speed > $IO_SPEED_FAST" | bc -l) )); then
-        echo "(✓)"
-    fi
-}
-
-check_memory_performance() {
-    local bw=$1
-    if (( $(echo "$bw < $MEMORY_BW_THRESHOLD" | bc -l) )); then
-        echo "/!\\"
-    else
-        echo "(✓)"
-    fi
-}
-
 # Get color by status
 get_status_color() {
 	local status=$1
