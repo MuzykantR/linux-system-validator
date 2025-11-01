@@ -19,11 +19,11 @@ while [[ $# -gt 0 ]]; do
 			print_property "Usage" "sysval -[OPTIONS]"
 			print_property "Options"
 			print_neutral "   -b, --basic	  Basic system check (default)"
-			print_neutral "   -d, --default   Detailed system analysis"
+			print_neutral "   -d, --detailed   Detailed system analysis"
 			print_neutral "   -h, --help	  Show this help"
 			exit 0 ;;
 		*)
-			print_neutral "Uknown options: $1"
+			print_neutral "Uknown option: $1"
 			print_neutral "Use --help for usage information"
 			exit 1 ;;
 	esac

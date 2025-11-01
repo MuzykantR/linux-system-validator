@@ -55,12 +55,12 @@ if [ "$MODE" = "detailed" ]; then
 	if command -v lscpu &> /dev/null; then
 		 # Family, Model, Stepping
         CPU_FAMILY=$(lscpu | grep "CPU family:" | awk '{print $3}')
-        CPU_MODEL=$(lscpu | grep "Model:" | awk '{print $2}')
+        CPU_MODEL_NUMBER=$(lscpu | grep "Model:" | awk '{print $2}')
         CPU_STEPPING=$(lscpu | grep "Stepping:" | awk '{print $2}')
         
-        if [ -n "$CPU_FAMILY" ] && [ -n "$CPU_MODEL" ]; then
+        if [ -n "$CPU_FAMILY" ] && [ -n "$CPU_MODEL_NUMBER" ]; then
             print_property "  CPU Family" "$CPU_FAMILY"
-            print_property "  Model" "$CPU_MODEL"
+            print_property "  Model Number" "$CPU_MODEL_NUMBER"
             print_property "  Stepping" "$CPU_STEPPING"
         fi
 
@@ -154,9 +154,9 @@ if [ "$MODE" = "detailed" ]; then
         print_warning "vmstat not available - please install 'sysstat'"
     fi
 
-# Top proceses
+    # Top proceses
     echo ""
-    print_mini_section "Top proccesses by CPU"
+    print_mini_section "Top processes by CPU"
 
     if command -v ps &> /dev/null; then
         echo -e "${COLOR_BOLD_WHITE}  PID %CPU COMMAND${COLOR_RESET}"
