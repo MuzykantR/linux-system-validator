@@ -5,6 +5,8 @@ source "$PROJECT_ROOT/core/output.sh"
 
 # Option by default
 MODE='basic'
+EXIT_DISK_DEP=0
+EXIT_DISK_SPACE=0
 
 # Option identification
 while [[ $# -gt 0 ]]; do
@@ -36,8 +38,12 @@ MOUNT_POINT=$(echo $R_INFO | awk '{print $6}')
 print_mini_section "Base info:"
 print_property "Root partition" "$ROOT_DISK"
 print_property "Total space" "$TOTAL_SPACE"
-print_status "$(check_disk_threshold $USED_PERCENT)" "Used space" "$USED_SPACE ($USED_PERCENT%)"
-print_status "$(check_disk_threshold $USED_PERCENT)" "Free space" "$FREE_SPACE"
+
+DISK_STATUS=$(check_disk_threshold $USED_PERCENT)
+print_status "$DISK_STATUS" "Used space" "$USED_SPACE ($USED_PERCENT%)"
+print_status "$DISK_STATUS" "Free space" "$FREE_SPACE"
+EXIT_DISK_SPACE=$(get_exit_code $DISK_STATUS)
+
 print_property "Mounted on" "$MOUNT_POINT"
 
 echo ""
@@ -73,5 +79,16 @@ if [ "$MODE" = "detailed" ]; then
         fi
     else
         print_warning "dd not available - I/O test skipped"
+        EXIT_DISK_DEP=3
     fi
+fi
+
+if [ $EXIT_DISK_DEP -eq 3 ]; then
+    exit 3
+elif [ $EXIT_DISK_SPACE -eq 2 ]; then
+    exit 2
+elif [ $EXIT_DISK_SPACE -eq 1 ]; then
+    exit 1
+else
+    exit 0
 fi

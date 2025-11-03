@@ -2,6 +2,7 @@
 
 source "$PROJECT_ROOT/core/config.sh"
 
+
 # Get status by value
 check_cpu_threshold() {
     local usage=$1
@@ -55,6 +56,20 @@ get_status_color() {
 		"/!\\") echo "$COLOR_YELLOW" ;;
 		"(X)") echo "$COLOR_RED" ;;
 		*) echo "$COLOR_WHITE" ;;
+	esac
+}
+
+EXIT_SUCCESS=0
+EXIT_WARNING=1
+EXIT_CRITICAL=2
+EXIT_DEP=3
+
+get_exit_code() {
+	local status=$1
+	case $status in
+		"(✓)") echo $EXIT_SUCCESS ;;
+		"/!\\") echo $EXIT_WARNING ;;
+		"(X)") echo $EXIT_CRITICAL ;;
 	esac
 }
 

@@ -25,6 +25,6 @@ Examples: Command dependencies by mode and module
     | bc      | detailed | bc         | cpu     |
     | bc      | detailed | bc         | memory  |
     | uptime  | detailed | procps     | cpu     |
-    | vmstat  | detailed | sysstat    | cpu     |
+    | vmstat  | detailed | procps     | cpu     |
     | ps      | detailed | procps     | cpu     |
     | dd      | detailed | coreutils  | storage |

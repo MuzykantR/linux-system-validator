@@ -5,6 +5,8 @@ source "$PROJECT_ROOT/core/output.sh"
 
 # Option by default
 MODE='basic'
+EXIT_CPU_DEP=0
+EXIT_CPU_LOAD=0
 
 # Option identification
 while [[ $# -gt 0 ]]; do
@@ -47,6 +49,7 @@ if command -v lscpu &> /dev/null; then
     print_property "  Frequency" "${CPU_MHZ} MHz"
 else
     print_warning "lscpu not available - please install 'util-linux'"
+    EXIT_CPU_DEP=3
 fi
 
 # =============== EXTRA INFO (detailed mode) ===============
@@ -106,6 +109,7 @@ if [ "$MODE" = "detailed" ]; then
         fi
     else
         print_warning "lscpu not available - microarchitecture analysis skipped"
+        EXIT_CPU_DEP=3
 	fi
 fi
 echo ""
@@ -126,10 +130,17 @@ if command -v mpstat &> /dev/null; then
             print_property "  - User" "${USER_LOAD}%"
             print_property "  - System" "${SYSTEM_LOAD}%"
             print_property "  - Idle" "${IDLE_LOAD}%"
+            EXIT_CPU_LOAD=$(get_exit_code $CPU_STATUS)
+
 	else
         print_warning "  Current load information not available"
+        EXIT_CPU_LOAD=2
     fi
+else
+    print_warning "mpstat not available - please install 'sysstat'"
+    EXIT_CPU_DEP=3
 fi
+
 
 # =============== EXTRA INFO (detailed mode) ===============
 if [ "$MODE" = "detailed" ]; then
@@ -140,6 +151,7 @@ if [ "$MODE" = "detailed" ]; then
         print_property "Uptime" "$UPTIME"
     else
         print_warning "uptime not available - please install 'procps'"
+        EXIT_CPU_DEP=3
     fi
 
     if command -v vmstat &> /dev/null; then
@@ -151,7 +163,8 @@ if [ "$MODE" = "detailed" ]; then
                 print_property "Blocked processes" "$BLOCKED_PROCS"
         fi
     else
-        print_warning "vmstat not available - please install 'sysstat'"
+        print_warning "vmstat not available - please install 'procps'"
+        EXIT_CPU_DEP=3
     fi
 
     # Top proceses
@@ -167,6 +180,17 @@ if [ "$MODE" = "detailed" ]; then
             print_neutral "  $PID $CPU_USAGE% $CMD"
         done
     else
-            print_warning "ps not available - please install 'procps'"
+        print_warning "ps not available - please install 'procps'"
+        EXIT_CPU_DEP=3
     fi
+fi
+
+if [ $EXIT_CPU_DEP -eq 3 ]; then
+    exit 3
+elif [ $EXIT_CPU_LOAD -eq 2 ]; then
+    exit 2
+elif [ $EXIT_CPU_LOAD -eq 1 ]; then
+    exit 1
+else
+    exit 0
 fi
