@@ -2,7 +2,6 @@
 
 source "$PROJECT_ROOT/core/config.sh"
 
-
 # Get status by value
 check_cpu_threshold() {
     local usage=$1
