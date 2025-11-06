@@ -1,3 +1,5 @@
+#!/bin/bash
+
 get_memory_info() {
 	MEMORY_INFO_B=$(free -b | awk 'NR==2')
 	TOTAL_BYTES=$(echo "$MEMORY_INFO_B" | awk '{print $2}')

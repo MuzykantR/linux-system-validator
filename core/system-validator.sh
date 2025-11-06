@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "$PROJECT_ROOT/core/output.sh"
+source "$PROJECT_ROOT/core/configs/output.sh"
 
 # Option by default
 MODE="basic" # basic | detailed
@@ -30,38 +30,10 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-
-echo ""
-print_header "=== SYSTEM VALIDATOR ==="
-print_property "Timestamp" "$(get_timestamp)"
-print_property "Mode" "$MODE"
-print_separator
-echo ""
-
-"$PROJECT_ROOT/modules/cpu-check.sh" --$MODE
-CPU_EXIT=$?
-echo ""
-
-"$PROJECT_ROOT/modules/memory-check.sh"
-MEMORY_EXIT=$?
-echo ""
-
-"$PROJECT_ROOT/modules/storage-check.sh" --$MODE
-STORAGE_EXIT=$?
-echo ""
-
-
-
-print_separator
-print_header "=== VALIDATION COMPLETE ==="
-echo ""
-
-OVERALL_EXIT=0
-if [ $CPU_EXIT -eq 3 ] || [ $MEMORY_EXIT -eq 3 ] || [ $STORAGE_EXIT -eq 3 ]; then
-    OVERALL_EXIT=3
-elif [ $CPU_EXIT -eq 2 ] || [ $MEMORY_EXIT -eq 2 ] || [ $STORAGE_EXIT -eq 2 ]; then
-    OVERALL_EXIT=2
-elif [ $CPU_EXIT -eq 1 ] || [ $MEMORY_EXIT -eq 1 ] || [ $STORAGE_EXIT -eq 1 ]; then
-    OVERALL_EXIT=1
+if [ "$MODE" = "basic" ]; then
+	"$PROJECT_ROOT/core/modes/basic.sh"
+elif [ "$MODE" = "detailed" ]; then
+	"$PROJECT_ROOT/core/modes/detailed.sh"
 fi
-exit $OVERALL_EXIT
+
+

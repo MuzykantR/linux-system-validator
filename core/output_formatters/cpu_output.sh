@@ -1,37 +1,14 @@
 #!/bin/bash
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "$PROJECT_ROOT/core/output.sh"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$PROJECT_ROOT/core/configs/output.sh"
 source "$PROJECT_ROOT/core/data_providers/cpu_data.sh"
 
-# Option by default
-MODE='basic'
 EXIT_CPU_DEP=0
 EXIT_CPU_LOAD=0
 
-# Option identification
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --basic|-b)
-            MODE="basic"
-            shift
-            ;;
-        --detailed|-d)
-            MODE="detailed"
-            shift
-            ;;
-        *)
-            shift
-            ;;
-    esac
-done
-
-print_section "--- CPU INFORMATION ---"
-
-# ============== BASE INFO (basic or detailed mode) ==================
-if [ "$MODE" = "basic" ] || [ "$MODE" = "detailed" ]; then
-    # Print info about CPU
-    print_mini_section "Base info:"
+print_cpu_basic_info() {
+    print_mini_section "Basic info:"
     if command -v lscpu &> /dev/null; then
         get_cpu_base_info
         print_property "  Model" "$MODEL_NAME"
@@ -45,10 +22,9 @@ if [ "$MODE" = "basic" ] || [ "$MODE" = "detailed" ]; then
         print_warning "lscpu not available - please install 'util-linux'"
         EXIT_CPU_DEP=3
     fi
-fi
+}
 
-# =============== EXTRA INFO (detailed mode) ===============
-if [ "$MODE" = "detailed" ]; then
+print_cpu_extra_info() {
 	# Info about sockets, threads, frequency
 	if command -v lscpu &> /dev/null; then
         get_cpu_extra_info
@@ -89,12 +65,9 @@ if [ "$MODE" = "detailed" ]; then
         print_warning "lscpu not available - microarchitecture analysis skipped"
         EXIT_CPU_DEP=3
 	fi
-fi
+}
 
-# ============== BASE INFO (basic or detailed mode) ==================
-if [ "$MODE" = "basic" ] || [ "$MODE" = "detailed" ]; then
-    echo ""
-    print_section "--- PROCESS/SYSTEM INFORMATION ---"
+print_cpu_load_info() {
     print_mini_section "Current load:"
     if command -v mpstat &> /dev/null; then
         get_cpu_load_info
@@ -111,10 +84,9 @@ if [ "$MODE" = "basic" ] || [ "$MODE" = "detailed" ]; then
         print_warning "mpstat not available - please install 'sysstat'"
         EXIT_CPU_DEP=3
     fi
-fi
+}
 
-# =============== EXTRA INFO (detailed mode) ===============
-if [ "$MODE" = "detailed" ]; then
+print_system_info() {
 	echo ""
     print_mini_section "System statistic:"
     if command -v uptime &> /dev/null; then
@@ -152,7 +124,5 @@ if [ "$MODE" = "detailed" ]; then
         print_warning "ps not available - please install 'procps'"
         EXIT_CPU_DEP=3
     fi
-fi
+}
 
-get_cpu_exit_code $EXIT_CPU_DEP $EXIT_CPU_LOAD
-exit $EXIT_CPU

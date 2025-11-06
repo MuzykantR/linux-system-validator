@@ -1,3 +1,5 @@
+#!/bin/bash
+
 get_cpu_base_info() {
     MODEL_NAME=$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2)
     ARCHITECTURE=$(uname -m)

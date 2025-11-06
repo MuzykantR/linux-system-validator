@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$PROJECT_ROOT/core/config.sh"
+source "$PROJECT_ROOT/core/configs/config.sh"
 
 # Get status by value
 check_cpu_threshold() {
