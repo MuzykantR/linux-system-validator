@@ -11,20 +11,16 @@ EXIT_MEM_SWAP=0
 # Get info about memory in bytes
 print_memory_usage() {
 	if command -v free &> /dev/null; then
-		get_memory_info
-		# Get info about memory in human-readable format
-		MEMORY_INFO=$(free -h | awk 'NR==2')
-		TOTAL_MEM=$(echo "$MEMORY_INFO" | awk '{print $2}')
-		USED_MEM=$(echo "$MEMORY_INFO" | awk '{print $3}')
-		FREE_MEM=$(echo "$MEMORY_INFO" | awk '{print $4}')
-
-		print_property "Total RAM" "$TOTAL_MEM"
-		print_status "$MEM_STATUS" "Used RAM" "$USED_MEM (${MEM_USAGE_PERCENT}%)"
-		print_status "$MEM_STATUS" "Free RAM" "$FREE_MEM"
-
-		get_swap_info
-		if [ $SWAP_TOTAL_BYTES -gt 0 ]; then
-			print_status "$SWAP_STATUS" "Swap" "$SWAP_TOTAL total (${SWAP_USAGE_PERCENT}% used)"
+		local -A memory_data
+		get_memory_info memory_data
+		print_property "Total RAM" "${memory_data["total_mem"]}"
+		print_status "${memory_data["mem_status"]}" "Used RAM" "${memory_data["used_mem"]} (${memory_data["used_mem_percent"]}%)"
+		print_status "${memory_data["mem_status"]}" "Free RAM" "${memory_data["free_mem"]}"
+		
+		local -A swap_data
+		get_swap_info swap_data
+		if [ "${swap_data["swap_total"]}" != "" ]; then
+			print_status "${swap_data["swap_status"]}" "Swap" "${swap_data["swap_total"]} total (${swap_data["used_swap_percent"]}% used)"
 		fi
 	else
 		print_warning "free not available - please install 'procps'"

@@ -1,34 +1,38 @@
 #!/bin/bash
 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$PROJECT_ROOT/core/configs/output.sh"
+
 get_storage_info() {
-    R_INFO=$(df -h / | grep -E '^/dev/' | awk '$6 == "/"')
-    ROOT_DISK=$(echo $R_INFO | awk '{print $1}')
-    TOTAL_SPACE=$(echo $R_INFO | awk '{print $2}')
-    USED_SPACE=$(echo $R_INFO | awk '{print $3}')
-    FREE_SPACE=$(echo $R_INFO | awk '{print $4}')
-    USED_PERCENT=$(echo $R_INFO | awk '{print $5}' | sed 's/%//')
-    MOUNT_POINT=$(echo $R_INFO | awk '{print $6}')
-    DISK_STATUS=$(check_disk_threshold $USED_PERCENT)
-    EXIT_DISK_USAGE=$(get_exit_code $DISK_STATUS)
+    local -n data=$1
+    local root_info=$(df -h / | grep -E '^/dev/' | awk '$6 == "/"')
+    data["root_disk"]=$(echo $root_info | awk '{print $1}')
+    data["total_space"]=$(echo $root_info | awk '{print $2}')
+    data["used_space"]=$(echo $root_info | awk '{print $3}')
+    data["free_space"]=$(echo $root_info | awk '{print $4}')
+    data["used_percent"]=$(echo $root_info | awk '{print $5}' | sed 's/%//')
+    data["mount_point"]=$(echo $root_info | awk '{print $6}')
+    data["status"]=$(check_disk_threshold ${data["used_percent"]})
+    EXIT_DISK_USAGE=$(get_exit_code ${data["status"]})
 }
 
 get_storage_performance() {
+    local -n data=$1
     # Temp directory, file
-    TEST_DIR="/tmp"
-    TEST_FILE="/tmp/system_validator_iotest.dat"
-
+    local test_dir="/tmp"
+    local test_file="/tmp/system_validator_iotest.dat"
     # Check available space
-    AVAILABLE_SPACE_KB=$(df "$TEST_DIR" | awk 'NR==2 {print $4}')
-    AVAILABLE_SPACE_GB=$((AVAILABLE_SPACE_KB / 1024 / 1024))
+    local available_space_kb=$(df "$test_dir" | awk 'NR==2 {print $4}')
+    data["available_space_gb"]=$(( available_space_kb / 1024 / 1024 ))
     
-    if [ "$AVAILABLE_SPACE_GB" -gt 2 ]; then
-        WRITE_OUTPUT=$(dd if=/dev/zero of="$TEST_FILE" bs=64M count=16 oflag=direct conv=fdatasync 2>&1)
-        WRITE_SPEED=$(echo "$WRITE_OUTPUT" | grep -E "copied|bytes" | awk '{print $(NF-1), $NF}')
+    if [ "${data["available_space_gb"]}" -gt 2 ]; then
+        local write_output=$(dd if=/dev/zero of="$test_file" bs=64M count=16 oflag=direct conv=fdatasync 2>&1)
+        data["write_speed"]=$(echo "$write_output" | grep -E "copied|bytes" | awk '{print $(NF-1), $NF}')
         
-        READ_OUTPUT=$(dd if="$TEST_FILE" of=/dev/null bs=64M iflag=direct 2>&1)
-        READ_SPEED=$(echo "$READ_OUTPUT" | grep -E "copied|bytes" | awk '{print $(NF-1), $NF}')
+        local read_output=$(dd if="$test_file" of=/dev/null bs=64M iflag=direct 2>&1)
+        data["read_speed"]=$(echo "$read_output" | grep -E "copied|bytes" | awk '{print $(NF-1), $NF}')
         
-        rm -f "$TEST_FILE"
+        rm -f "$test_file"
     fi
 }
 

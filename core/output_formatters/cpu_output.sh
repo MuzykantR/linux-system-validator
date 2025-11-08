@@ -10,14 +10,15 @@ EXIT_CPU_LOAD=0
 print_cpu_basic_info() {
     print_mini_section "Basic info:"
     if command -v lscpu &> /dev/null; then
-        get_cpu_base_info
-        print_property "  Model" "$MODEL_NAME"
-        print_property "  Architecture"  "$ARCHITECTURE"
-        print_property "  Sockets" "$SOCKETS"
-        print_property "  Cores per socket" "$CORES_PER_SOCKET"
-        print_property "  Threads per core" "$THREADS_PER_CORE"
-        print_property "  Total" "$TOTAL_CORES cores, $TOTAL_THREADS threads"
-        print_property "  Frequency" "${CPU_MHZ} MHz"
+        local -A cpu_data
+        get_cpu_base_info cpu_data
+        print_property "  Model" "${cpu_data["model"]}"
+        print_property "  Architecture"  "${cpu_data["architecture"]}"
+        print_property "  Sockets" "${cpu_data["sockets"]}"
+        print_property "  Cores per socket" "${cpu_data["cores_per_socket"]}"
+        print_property "  Threads per core" "${cpu_data["threads_per_core"]}"
+        print_property "  Total" "${cpu_data["total_cores"]} cores, ${cpu_data["total_threads"]} threads"
+        print_property "  Frequency" "${cpu_data["frequency"]} MHz"
     else
         print_warning "lscpu not available - please install 'util-linux'"
         EXIT_CPU_DEP=3
@@ -27,28 +28,29 @@ print_cpu_basic_info() {
 print_cpu_extra_info() {
 	# Info about sockets, threads, frequency
 	if command -v lscpu &> /dev/null; then
-        get_cpu_extra_info
+        local -A cpu_data
+        get_cpu_extra_info cpu_data
         
         # Family, Model, Stepping
-        if [ -n "$CPU_FAMILY" ] && [ -n "$CPU_MODEL_NUMBER" ]; then
-            print_property "  CPU Family" "$CPU_FAMILY"
-            print_property "  Model Number" "$CPU_MODEL_NUMBER"
-            print_property "  Stepping" "$CPU_STEPPING"
+        if [ -n "${cpu_data["family"]}" ] && [ -n "${cpu_data["model_number"]}" ]; then
+            print_property "  CPU Family" "${cpu_data["family"]}"
+            print_property "  Model Number" "${cpu_data["model_number"]}"
+            print_property "  Stepping" "${cpu_data["stepping"]}"
         fi
 
         # Cache cpu
         echo ""
         print_mini_section "Caches:"
-        [ -n "$L1D_CACHE" ] && print_property "  L1d" "$L1D_CACHE"
-        [ -n "$L1I_CACHE" ] && print_property "  L1i" "$L1I_CACHE"
-        [ -n "$L2_CACHE" ] && print_property "  L2" "$L2_CACHE"
-        [ -n "$L3_CACHE" ] && print_property "  L3" "$L3_CACHE"
+        [ -n "${cpu_data["cache_l1d"]}" ] && print_property "  L1d" "${cpu_data["cache_l1d"]}"
+        [ -n "${cpu_data["cache_l1i"]}" ] && print_property "  L1i" "${cpu_data["cache_l1i"]}"
+        [ -n "${cpu_data["cache_l2"]}" ] && print_property "  L2" "${cpu_data["cache_l2"]}"
+        [ -n "${cpu_data["cache_l3"]}" ] && print_property "  L3" "${cpu_data["cache_l3"]}"
         
         # Vector Extensions
 		echo ""
         print_mini_section "Vector Extensions:"
-        if [ -n "$VECTOR_EXTENSIONS" ]; then
-            print_neutral "  ${VECTOR_EXTENSIONS%,}"
+        if [ -n "${cpu_data["vector_extensions"]}" ]; then
+            print_neutral "  ${cpu_data["vector_extensions"]%,}"
         else
             print_neutral "  None detected"
         fi
@@ -56,8 +58,8 @@ print_cpu_extra_info() {
         # Frequency
         echo ""
         print_mini_section "Frequency Range:"
-        if [ -n "$MIN_FREQ" ] && [ -n "$MAX_FREQ" ]; then
-            print_neutral "  Min: ${MIN_FREQ}MHz - Max: ${MAX_FREQ}MHz"
+        if [ -n "${cpu_data["min_frequency"]}" ] && [ -n "${cpu_data["max_frequency"]}" ]; then
+            print_neutral "  Min: ${cpu_data["min_frequency"]}MHz - Max: ${cpu_data["max_frequency"]}MHz"
         else
             print_warning "  Frequency information not available"
         fi
@@ -70,12 +72,13 @@ print_cpu_extra_info() {
 print_cpu_load_info() {
     print_mini_section "Current load:"
     if command -v mpstat &> /dev/null; then
-        get_cpu_load_info
-        if [ -n "$CPU_STATS" ]; then
-            print_status "$CPU_STATUS" "Current CPU usage" "${TOTAL_LOAD}%"
-            print_property "  - User" "${USER_LOAD}%"
-            print_property "  - System" "${SYSTEM_LOAD}%"
-            print_property "  - Idle" "${IDLE_LOAD}%"
+        local -A cpu_data
+        get_cpu_load_info cpu_data
+        if [ -n "${cpu_data["cpu_stats"]}" ]; then
+            print_status "${cpu_data["status"]}" "Current CPU usage" "${cpu_data["total_load"]}%"
+            print_property "  - User" "${cpu_data["user_load"]}%"
+            print_property "  - System" "${cpu_data["system_load"]}%"
+            print_property "  - Idle" "${cpu_data["idle_load"]}%"
         else
             print_warning "  Current load information not available"
             EXIT_CPU_LOAD=2
@@ -87,24 +90,25 @@ print_cpu_load_info() {
 }
 
 print_system_info() {
-	echo ""
     print_mini_section "System statistic:"
     if command -v uptime &> /dev/null; then
-        get_cpu_system_statistic
-        print_property "Uptime" "$UPTIME"
+        local -A system_data
+        get_cpu_system_statistic system_data
+        print_property "Uptime" "${system_data["uptime"]}"
     else
         print_warning "uptime not available - please install 'procps'"
         EXIT_CPU_DEP=3
     fi
 
     if command -v vmstat &> /dev/null; then
-        get_cpu_process_info
-        if [ -n "$VMSTAT_OUTPUT" ]; then
-            print_property "Running processes" "$RUNNING_PROCS"
-            print_property "Blocked processes" "$BLOCKED_PROCS"
+        local -A system_data
+        get_cpu_process_info system_data
+        if [ -n "${system_data["vmstat_output"]}" ]; then
+            print_property "Running processes" "${system_data["running_process"]}"
+            print_property "Blocked processes" "${system_data["blocked_process"]}"
         fi
     else
-        print_warning "vmstat not available - please install 'procps'"
+        print_warning "vmstat not available - please install 'sysstat'"
         EXIT_CPU_DEP=3
     fi
 
@@ -113,12 +117,15 @@ print_system_info() {
     print_mini_section "Top processes by CPU"
 
     if command -v ps &> /dev/null; then
+    local pid
+    local cpu_usage
+    local cmd
         echo -e "${COLOR_BOLD_WHITE}  PID %CPU COMMAND${COLOR_RESET}"
         ps -eo pid,%cpu,comm --sort=-%cpu | head -6 | tail -5 | while read line; do
-            PID=$(echo $line | awk '{print $1}')
-            CPU_USAGE=$(echo $line | awk '{print $2}')
-            CMD=$(echo $line | awk '{print $3}')
-            print_neutral "  $PID $CPU_USAGE% $CMD"
+            pid=$(echo $line | awk '{print $1}')
+            cpu_usage=$(echo $line | awk '{print $2}')
+            cmd=$(echo $line | awk '{print $3}')
+            print_neutral "  $pid $cpu_usage% $cmd"
         done
     else
         print_warning "ps not available - please install 'procps'"

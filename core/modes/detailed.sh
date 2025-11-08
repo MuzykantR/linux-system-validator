@@ -20,6 +20,7 @@ echo ""
 
 print_section "--- PROCESSES/SYSTEM INFORMATION ---"
 print_cpu_load_info
+echo ""
 print_system_info
 echo ""
 
